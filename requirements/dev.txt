@@ -2,3 +2,5 @@
 -r base.txt # includes the base.txt requirements file
 ipdb==0.9.3
 ipython==4.2.0
+mock==2.0.0
+requests-mock==0.7.0
