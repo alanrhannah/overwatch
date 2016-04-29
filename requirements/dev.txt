@@ -1,0 +1,4 @@
+# pip install -r requirements/dev.txt
+-r base.txt # includes the base.txt requirements file
+ipdb==0.9.3
+ipython==4.2.0
