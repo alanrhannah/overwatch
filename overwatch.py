@@ -53,7 +53,6 @@ class Overwatch(object):
             'Single CR p/7d': self.calculate_single_crawls_per_week(),
             'Max CR p/7d': self.calculate_max_crawls_per_week()
         }
-        import ipdb; ipdb.set_trace()
         return self.scrapy_metrics
 
     def gather_crawl_outliers(self):
@@ -70,7 +69,6 @@ class Overwatch(object):
                 outliers['end'] = self.str_to_dt(item['end_time'])
             elif self.str_to_dt(item['end_time']) > outliers['end']:
                 outliers['end'] = self.str_to_dt(item['end_time'])
-        import ipdb; ipdb.set_trace()
         return outliers
 
     def calculate_total_duration(self):
@@ -135,12 +133,12 @@ class Overwatch(object):
     def write_to_csv(self):
         scrapy_metrics = self.gather_scrapy_metrics()
         fieldnames = scrapy_metrics.keys()
-        with open(settings.OUTPUT_FILE, 'wb') as csvfile:
+        with open(settings.OUTPUT_FILE, 'w+') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-            import ipdb; ipdb.set_trace()
+            writer.writerow(scrapy_metrics)
 
 if __name__ == '__main__':
     o = Overwatch()
-    import ipdb; ipdb.set_trace()
+    o.write_to_csv()
     #foo = o.gather_scrapy_metrics()
