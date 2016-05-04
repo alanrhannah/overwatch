@@ -1,3 +1,4 @@
+import csv
 import datetime
 import json
 import os
@@ -20,7 +21,7 @@ class Overwatch(object):
 
         self.response = requests.get(query_url)
 
-    def parse_string_to_datetime(self, date_string):
+    def str_to_dt(self, date_string):
         dt = datetime.datetime.strptime(
                 date_string,
                 '%Y-%m-%d %H:%M:%S.%f')
@@ -40,31 +41,106 @@ class Overwatch(object):
         return calculated_delta
 
     def gather_scrapy_metrics(self):
-        self.scrapy_metrics = {}
-        self.scrapy_metrics['Average Crawl Time (S)'] = self.caclulate_av_crawl()
-        self.scrapy_metrics['Longest Crawl Time (S)'] = self.longest_crawl()
-        self.scrapy_metrics['Shortest Crawl Time'] = self.shortest_crawl()
-        self.scrapy_metrics['Total Duration'] = self.caclulate_total_duration()
+        self.scrapy_metrics = {
+            'Av CR (S)': self.calculate_av_crawl_duration(),
+            'Longest CR (S)': max(self.gather_crawl_durations()),
+            'Shortest CR (S)': min(self.gather_crawl_durations()),
+            'Total Duration': self.calculate_total_duration(),
+            'Single CR p/h': self.calculate_single_crawls_per_hour(),
+            'Max CR p/h': self.calculate_max_crawls_per_hour(),
+            'Single CR p/d': self.calculate_single_crawls_per_day(),
+            'Max CR p/d': self.calculate_max_crawls_per_day(),
+            'Single CR p/7d': self.calculate_single_crawls_per_week(),
+            'Max CR p/7d': self.calculate_max_crawls_per_week()
+        }
+        import ipdb; ipdb.set_trace()
         return self.scrapy_metrics
+
+    def gather_crawl_outliers(self):
+        outliers = {'strt': None,
+                    'end': None}
+
+        for item in self.response.json()['finished']:
+            if not outliers['strt']:
+                outliers['strt'] = self.str_to_dt(item['start_time'])
+            elif self.str_to_dt(item['start_time']) < outliers['strt']:
+                outliers['strt'] = self.str_to_dt(item['start_time'])
+
+            if not outliers['end']:
+                outliers['end'] = self.str_to_dt(item['end_time'])
+            elif self.str_to_dt(item['end_time']) > outliers['end']:
+                outliers['end'] = self.str_to_dt(item['end_time'])
+        import ipdb; ipdb.set_trace()
+        return outliers
+
+    def calculate_total_duration(self):
+        outliers = self.gather_crawl_outliers()
+        total_duration = outliers['end'] - outliers['strt']
+        return total_duration.total_seconds()
 
     def gather_crawl_durations(self):
         crawl_durations = []
         response_dictionary = self.response.json()
         for item in response_dictionary['finished']:
-            start_dt = self.parse_string_to_datetime(item['start_time'])
-            end_dt = self.parse_string_to_datetime(item['end_time'])
+            start_dt = self.str_to_dt(item['start_time'])
+            end_dt = self.str_to_dt(item['end_time'])
             duration = self.calculate_delta(start_dt, end_dt)
             crawl_durations.append(duration.total_seconds())
         return crawl_durations
 
-    def calculate_av_crawl(self):
+    def calculate_av_crawl_duration(self):
         crawl_durations = self.gather_crawl_durations()
         getcontext().prec = 4
         av_crawl_seconds = Decimal(sum(crawl_durations) / len(crawl_durations))
         av_crawl_seconds = round(av_crawl_seconds, 2)
-        return av_crawl_seconds
+
+        return float(av_crawl_seconds)
+
+    def calculate_single_crawls_per_hour(self):
+        average_crawl_duration = self.calculate_av_crawl_duration()
+        single_crawls_per_hour = Decimal(3660) / Decimal(average_crawl_duration)
+
+        return float(single_crawls_per_hour)
+
+    def calculate_max_crawls_per_hour(self):
+        single_crawls_per_hour = self.calculate_single_crawls_per_hour()
+        max_crawls_per_hour = single_crawls_per_hour * settings.CONC_SPIDERS
+
+        return float(max_crawls_per_hour)
+
+    def calculate_single_crawls_per_day(self):
+        single_crawls_per_hour = self.calculate_single_crawls_per_hour()
+        single_crawls_per_day = single_crawls_per_hour * 24
+
+        return float(single_crawls_per_day)
+
+    def calculate_max_crawls_per_day(self):
+        max_crawls_per_hour = self.calculate_max_crawls_per_hour()
+        max_crawls_per_day = max_crawls_per_hour * settings.CONC_SPIDERS
+
+        return float(max_crawls_per_day)
+
+    def calculate_single_crawls_per_week(self):
+        single_crawls_per_day = self.calculate_single_crawls_per_day()
+        single_crawls_per_week = single_crawls_per_day * 7
+        
+        return float(single_crawls_per_week)
+
+    def calculate_max_crawls_per_week(self):
+        max_crawls_per_day = self.calculate_max_crawls_per_day()
+        max_crawls_per_week = max_crawls_per_day * 7
+       
+        return float(max_crawls_per_week)
+
+    def write_to_csv(self):
+        scrapy_metrics = self.gather_scrapy_metrics()
+        fieldnames = scrapy_metrics.keys()
+        with open(settings.OUTPUT_FILE, 'wb') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            import ipdb; ipdb.set_trace()
 
 if __name__ == '__main__':
     o = Overwatch()
     import ipdb; ipdb.set_trace()
-
+    #foo = o.gather_scrapy_metrics()

@@ -118,30 +118,30 @@ class TestCalculateTimeDifferences(unittest.TestCase):
         self.response_json_dict = json.loads(
             self.scrapyd_list_jobs_response_json)
 
-        self.outliers_json_dict = json.loads(
+        outliers_json_dict = json.loads(
             self.scrapyd_outliers_json)
 
-        self.calculated_delta = (self.parse_to_datetime(
+        self.calculated_delta = (self.str_to_dt(
                 self.response_json_dict['finished'][0]['end_time']
-                ) - self.parse_to_datetime(
+                ) - self.str_to_dt(
                 self.response_json_dict['finished'][0]['start_time']
                 ))
 
         self.earliest_datetime = None
         self.latest_datetime = None
 
-        for item in self.outliers_json_dict['finished']:
+        for item in outliers_json_dict['finished']:
             if self.earliest_datetime is None:
-                self.earliest_datetime = self.parse_to_datetime(item['start_time'])
-            elif self.parse_to_datetime(item['start_time']) < self.earliest_datetime:
-                self.earliest_datetime = self.parse_to_datetime(item['start_time'])
+                self.earliest_datetime = self.str_to_dt(item['start_time'])
+            elif self.str_to_dt(item['start_time']) < self.earliest_datetime:
+                self.earliest_datetime = self.str_to_dt(item['start_time'])
 
             if self.latest_datetime is None:
-                self.latest_datetime = self.parse_to_datetime(item['end_time'])
-            elif self.parse_to_datetime(item['end_time']) > self.latest_datetime:
-                self.latest_datetime = self.parse_to_datetime(item['end_time'])
+                self.latest_datetime = self.str_to_dt(item['end_time'])
+            elif self.str_to_dt(item['end_time']) > self.latest_datetime:
+                self.latest_datetime = self.str_to_dt(item['end_time'])
 
-    def parse_to_datetime(self, date_string):
+    def str_to_dt(self, date_string):
         dt = datetime.datetime.strptime(
                 date_string,
                 '%Y-%m-%d %H:%M:%S.%f')
@@ -151,7 +151,7 @@ class TestCalculateTimeDifferences(unittest.TestCase):
         # 2016-04-29 10:28:08.004732
         expected = datetime.datetime(2016, 04, 29, 10, 28, 8, 4732)
         self.assertEqual(
-            self.parse_to_datetime(
+            self.str_to_dt(
                 self.response_json_dict['finished'][0]['start_time']),
             expected)
 
