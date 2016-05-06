@@ -1,0 +1,13 @@
+ {"finished": [{"end_time": "2016-04-29 10:32:09.552525",
+   "id": "072b72760d4511e691a7000c29b5ef90",
+   "spider": "google_serp_spider",
+   "start_time": "2016-04-29 10:28:08.004732"},
+  {"end_time": "2016-04-29 10:33:39.932376",
+   "id": "072c2dc40d4511e691a7000c29b5ef90",
+   "spider": "google_serp_spider",
+   "start_time": "2016-04-29 10:29:46.443358"},
+  {"end_time": "2016-04-29 10:33:51.420786",
+   "id": "072bcd8e0d4511e691a7000c29b5ef90",
+   "spider": "google_serp_spider",
+   "start_time": "2016-04-29 10:29:32.768338"}]
+ }
