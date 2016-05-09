@@ -19,7 +19,7 @@ class Overwatch(object):
     """
 
     def __init__(self):
-        query_url = '{}{}:{}/{}?project={}'.format(
+        self.query_url = '{}{}:{}/{}?project={}'.format(
             settings.SCRAPYD_SERVER_PROTOCOL,
             settings.SCRAPYD_SERVER_IP,
             settings.SCRAPYD_SERVER_PORT,
@@ -27,7 +27,7 @@ class Overwatch(object):
             settings.SCRAPYD_PROJECT_NAME
             )
 
-        self.response = requests.get(query_url)
+        self.response = requests.get(self.query_url)
 
     def str_to_dt(self, date_string):
         """
@@ -200,7 +200,7 @@ class Overwatch(object):
         :returns single_crawls_per_day:  a float
         """
         single_crawls_per_hour = self.calculate_single_crawls_per_hour()
-        single_crawls_per_day = single_crawls_per_hour * 24
+        single_crawls_per_day = round((single_crawls_per_hour * 24), 2)
 
         return float(single_crawls_per_day)
 
@@ -213,7 +213,7 @@ class Overwatch(object):
 
         :returns est_total_crawls_per_day:  a float
         """
-        est_total_crawls_per_hour = self.calculate_max_crawls_per_hour()
+        est_total_crawls_per_hour = self.calculate_est_total_crawls_per_hour()
         est_total_crawls_per_day = est_total_crawls_per_hour * 24
 
         return float(est_total_crawls_per_day)
@@ -241,7 +241,7 @@ class Overwatch(object):
 
         :returns est_total_crawls_per_week:  a float
         """
-        est_total_crawls_per_day = self.calculate_max_crawls_per_day()
+        est_total_crawls_per_day = self.calculate_est_total_crawls_per_day()
         est_total_crawls_per_week = est_total_crawls_per_day * 7
        
         return float(est_total_crawls_per_week)
