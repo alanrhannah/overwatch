@@ -1,8 +1,10 @@
+import csv
 import datetime
 import json
 import os
 import requests
 import requests_mock
+import tempfile
 import unittest
 
 from decimal import Decimal, getcontext
@@ -239,14 +241,15 @@ class TestCalculateDelta(unittest.TestCase):
         calculated_delta = self.calculate_delta(self.start_date, self.end_date)
         self.assertEqual(calculated_delta, expected)
 
-class TestGatherCrawlOutliers(unittest.TestCase):
+class TestOverwatch(unittest.TestCase):
 
     def create_file_path(self, file_name):
         path = os.path.join(self.data_file_path, file_name)
-
         return path 
 
     def setUp(self):
+        self.temp_dir = tempfile.mkdtemp(prefix='temp_test_dir')
+
         self.data_file_path = os.path.join(os.getcwd(), 'test_data')
         self.overwatch = Overwatch()
         self.json_outliers_file_name = 'scrapyd_list_jobs_outliers_json.json'
@@ -348,6 +351,18 @@ class TestGatherCrawlOutliers(unittest.TestCase):
             'Max CR p/7d': 123648 
         } 
         self.assertEqual(self.overwatch.gather_scrapy_metrics(), expected)  
+
+    def test_write_to_csv(self):
+        settings.OUTPUT_FILE = os.path.join(self.temp_dir,
+                                            'timings.csv')
+        os.mknod(settings.OUTPUT_FILE)
+        self.overwatch.write_to_csv()
+
+        with open(settings.OUTPUT_FILE, 'rb') as csvfile:
+            reader = csv.DictReader(csvfile)
+            csv_data = [row for row in reader]
+            self.assertEqual(csv_data[0]['Total Duration'], '343.416054')
+
 
 if __name__ == '__main__':
     unittest.main()
