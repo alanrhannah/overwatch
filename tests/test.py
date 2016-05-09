@@ -354,7 +354,7 @@ class TestOverwatch(unittest.TestCase):
 
     def test_write_to_csv(self):
         settings.OUTPUT_FILE = os.path.join(self.temp_dir,
-                                            'timings.csv')
+                                            settings.filename)
         os.mknod(settings.OUTPUT_FILE)
         self.overwatch.write_to_csv()
 

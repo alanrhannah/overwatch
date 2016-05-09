@@ -258,4 +258,3 @@ class Overwatch(object):
 if __name__ == '__main__':
     o = Overwatch()
     o.write_to_csv()
-    #foo = o.gather_scrapy_metrics()

@@ -1,3 +1,4 @@
+import datetime
 import os
 
 SCRAPYD_SERVER_PROTOCOL = 'http://'
@@ -13,4 +14,7 @@ OUTPUT_PATH = os.path.join(os.environ['DATA_EXPORT_DIR'],
 if not os.path.exists(OUTPUT_PATH):
     os.makedirs(OUTPUT_PATH)
 
-OUTPUT_FILE = os.path.join(OUTPUT_PATH, 'timings.csv')
+today = datetime.datetime.today().strftime('%d-%m-%Y')
+filename = '{}_{}.csv'.format(today, SCRAPYD_PROJECT_NAME)
+
+OUTPUT_FILE = os.path.join(OUTPUT_PATH, filename)
