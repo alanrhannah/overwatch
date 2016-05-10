@@ -252,7 +252,7 @@ class TestCalculateTimeDifferences(unittest.TestCase):
 
     def test_parse_datetime(self):
         # 2016-04-29 10:28:08.004732
-        expected = datetime.datetime(2016, 04, 29, 10, 28, 8, 4732)
+        expected = datetime.datetime(2016, 4, 29, 10, 28, 8, 4732)
         self.assertEqual(
             self.str_to_dt(
                 self.response_json_dict['finished'][0]['start_time']),
@@ -361,8 +361,8 @@ class TestGatherCrawlOutliers(unittest.TestCase):
         self.outliers = self.overwatch.gather_crawl_outliers()
 
     def test_gather_crawl_outliers(self):
-        expted = {'strt': datetime.datetime(2016, 04, 01, 01, 01, 59, 999999), 
-                  'end': datetime.datetime(2016, 04, 01, 23, 59, 59, 999999)}
+        expted = {'strt': datetime.datetime(2016, 4, 1, 1, 1, 59, 999999), 
+                  'end': datetime.datetime(2016, 4, 1, 23, 59, 59, 999999)}
 
         self.assertEqual(self.outliers, expted)
 
