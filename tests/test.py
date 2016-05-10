@@ -78,6 +78,7 @@ class TestOverwatch(unittest.TestCase):
         
         self.output_file = os.path.join(settings.OUTPUT_PATH, filename) 
         self.temp_dir = tempfile.mkdtemp(prefix='temp_test_dir')
+        
         self.data_file_path = os.path.join(os.getcwd(), 'test_data')
         self.json_outliers_file_name = 'scrapyd_list_jobs_outliers_json.json'
         self.scrapyd_outliers_json_path = self.create_file_path(
@@ -319,6 +320,51 @@ class TestCheckResponseCode(unittest.TestCase):
         self.overwatch.response = self.session.get('mock://0.0.0.1:6800/fail')
         self.assertEqual(self.overwatch.check_response_code(), False)
 
+
+class TestGatherCrawlOutliers(unittest.TestCase):
+    def create_file_path(self, file_name):
+        path = os.path.join(self.data_file_path, file_name)
+        return path 
+
+    def setUp(self):       
+        arguments = parse_arguments(['-p',
+                                     'harvestman',
+                                     '-d',
+                                     'http://192.168.124.30',
+                                     '-P',
+                                     '6800',
+                                     '-s',
+                                     '10'])
+
+        self.overwatch = Overwatch(arguments)
+        
+        self.data_file_path = os.path.join(os.getcwd(), 'test_data')
+        self.json_file_name = 'scrapyd_list_jobs_for_loop_json.json'
+        self.json_path = self.create_file_path(self.json_file_name)
+
+        self.scrapyd_json = open(self.json_path, 'rb').read()
+
+        json_dict = json.loads(self.scrapyd_json)
+
+        self.session = requests.Session()
+        self.adapter = requests_mock.Adapter()
+        self.session.mount('mock', self.adapter)
+        self.adapter.register_uri(
+            'GET',
+            'mock://0.0.0.1:6800/listjobs.json?project=harvestman',
+            json=json_dict,
+            status_code=200,
+            )
+
+        self.overwatch.response = self.session.get(
+            'mock://0.0.0.1:6800/listjobs.json?project=harvestman')
+        self.outliers = self.overwatch.gather_crawl_outliers()
+
+    def test_gather_crawl_outliers(self):
+        expted = {'strt': datetime.datetime(2016, 04, 01, 01, 01, 59, 999999), 
+                  'end': datetime.datetime(2016, 04, 01, 23, 59, 59, 999999)}
+
+        self.assertEqual(self.outliers, expted)
 
 if __name__ == '__main__':
     unittest.main()
