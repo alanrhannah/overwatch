@@ -23,10 +23,15 @@ class Overwatch(object):
 
     def __init__(self, arguments):
         self.arguments = arguments
-        self.query_url = '{}:{}/listjobs.json?project={}'.format(
-            self.arguments.domain_name[0],
-            self.arguments.port[0],
-            self.arguments.project_name[0])
+        if self.arguments.port:
+            self.query_url = '{}:{}/listjobs.json?project={}'.format(
+                self.arguments.domain_name[0],
+                self.arguments.port[0],
+                self.arguments.project_name[0])
+        else:
+            self.query_url = '{}/listjobs.json?project={}'.format(
+                self.arguments.domain_name[0],
+                self.arguments.project_name[0])
 
         self.con_spiders = self.arguments.concurrent_spiders[0]
 
@@ -257,7 +262,7 @@ class Overwatch(object):
         scrapy_metrics = self.gather_scrapy_metrics()
         fieldnames = scrapy_metrics.keys()
         
-        with open(settings.OUTPUT_FILE, 'w+') as csvfile:
+        with open(self.output_file, 'w+') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerow(scrapy_metrics)
@@ -292,8 +297,7 @@ def parse_arguments(arguments):
                         '--port',
                         help=('The port number of your scrapy project'),
                         type=str,
-                        nargs=1,
-                        required=True)
+                        nargs=1)
 
     parser.add_argument('-s',
                         '--concurrent_spiders',
