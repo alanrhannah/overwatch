@@ -1,7 +1,10 @@
+import argparse
 import csv
 import datetime
+import os
 import requests
 import settings
+import sys
 
 from decimal import Decimal, getcontext
 
@@ -18,15 +21,23 @@ class Overwatch(object):
     Writes the results to a csv file on the disk.
     """
 
-    def __init__(self):
-        self.query_url = '{}{}:{}/{}?project={}'.format(
-            settings.SCRAPYD_SERVER_PROTOCOL,
-            settings.SCRAPYD_SERVER_IP,
-            settings.SCRAPYD_SERVER_PORT,
-            settings.SCRAPYD_LIST_JOBS_ENDPOINT,
-            settings.SCRAPYD_PROJECT_NAME
-            )
+    def __init__(self, arguments):
+        self.arguments = arguments
+        if self.arguments.port:
+            self.query_url = '{}:{}/listjobs.json?project={}'.format(
+                self.arguments.domain_name[0],
+                self.arguments.port[0],
+                self.arguments.project_name[0])
+        else:
+            self.query_url = '{}/listjobs.json?project={}'.format(
+                self.arguments.domain_name[0],
+                self.arguments.project_name[0])
 
+        self.con_spiders = self.arguments.concurrent_spiders[0]
+
+        today = datetime.datetime.today().strftime('%d-%m-%Y')
+        filename = '{}_{}.csv'.format(today, self.arguments.project_name[0])
+        self.output_file = os.path.join(settings.OUTPUT_PATH, filename)
         self.response = requests.get(self.query_url)
 
     def str_to_dt(self, date_string):
@@ -186,7 +197,7 @@ class Overwatch(object):
         """
         single_crawls_per_hour = self.calculate_single_crawls_per_hour()
         est_total_crawls_per_hour = single_crawls_per_hour * \
-                                        settings.CONC_SPIDERS
+                                        self.arguments.concurrent_spiders[0]
 
         return float(est_total_crawls_per_hour)
 
@@ -250,11 +261,54 @@ class Overwatch(object):
         """Create a csv file from a dictionary."""
         scrapy_metrics = self.gather_scrapy_metrics()
         fieldnames = scrapy_metrics.keys()
-        with open(settings.OUTPUT_FILE, 'w+') as csvfile:
+        
+        with open(self.output_file, 'w+') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerow(scrapy_metrics)
 
+
+def parse_arguments(arguments):
+    """
+    Add arguments to command line.
+    Parse arguments to argparse namesapce.
+    
+    :params arguments:  a list of arguments from sys.argv
+    :returns parser.parse_args(arguments):  argparse namespace object 
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p',
+                        '--project_name',
+                        help=('The name of your scrapy project'),
+                        type=str,
+                        nargs=1,
+                        required=True)
+
+
+    parser.add_argument('-d',
+                        '--domain_name',
+                        help=('The fully qualified domain of your scrapy '
+                              'instance. e.g. https://www.example.com'),
+                        type=str,
+                        nargs=1,
+                        required=True)
+
+    parser.add_argument('-P',
+                        '--port',
+                        help=('The port number of your scrapy project'),
+                        type=str,
+                        nargs=1)
+
+    parser.add_argument('-s',
+                        '--concurrent_spiders',
+                        help=('The number of spiders your scrapyd instance'
+                              ' can process concurrently'),
+                        type=int,
+                        nargs=1)
+
+    return parser.parse_args(arguments)
+
+
 if __name__ == '__main__':
-    o = Overwatch()
-    o.write_to_csv()
+    arguments = parse_arguments(sys.argv[1:])
+    Overwatch(arguments).write_to_csv()
