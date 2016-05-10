@@ -307,4 +307,4 @@ def parse_arguments(arguments):
 
 if __name__ == '__main__':
     arguments = parse_arguments(sys.argv[1:])
-    Overwatch(arguments)
+    Overwatch(arguments).write_to_csv()

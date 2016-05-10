@@ -281,16 +281,6 @@ class TestCalculateTimeDifferences(unittest.TestCase):
         duration = self.latest_datetime - self.earliest_datetime
         self.assertEqual(duration.total_seconds(), 343.416054)
 
-# class TestStrToDateTime(unittest.TestCase):
-
-#     def setUp(self):
-#         self.str_to_dt = Overwatch().str_to_dt
-#         pass
-
-#     def test_str_to_dt(self):
-#         date_string = '2016-04-11 20:20:20.111111'
-#         expected = datetime.datetime(2016, 4, 11, 20, 20, 20, 111111)
-#         self.assertEqual(self.str_to_dt(date_string), expected)
 
 class TestCheckResponseCode(unittest.TestCase):
 
@@ -329,21 +319,6 @@ class TestCheckResponseCode(unittest.TestCase):
         self.overwatch.response = self.session.get('mock://0.0.0.1:6800/fail')
         self.assertEqual(self.overwatch.check_response_code(), False)
 
-# class TestCalculateDelta(unittest.TestCase):
-
-#     def setUp(self):
-#         self.start_date = datetime.datetime(2016, 1, 1, 0, 0, 0, 0)
-#         self.end_date = datetime.datetime(2016, 1, 1, 1, 0, 0, 0)
-#         self.calculate_delta = Overwatch().calculate_delta
-
-#     def test_calculate_delta(self):
-#         expected = datetime.timedelta(0, 3600)
-#         calculated_delta = self.calculate_delta(self.start_date, self.end_date)
-#         self.assertEqual(calculated_delta, expected)
-
-# class TestOverwatch(unittest.TestCase):
-
-#     
 
 if __name__ == '__main__':
     unittest.main()
