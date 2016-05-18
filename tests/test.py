@@ -124,6 +124,9 @@ class TestOverwatch(unittest.TestCase):
                     }
         self.assertEqual(self.overwatch.gather_crawl_outliers(), expected)
 
+    def test_gather_completed_crawl_count(self):
+        self.assertEqual(self.overwatch.gather_completed_crawl_count(), 3)
+
     def test_calculate_total_duration(self):
         expected = 343.416054
         self.assertEqual(self.overwatch.calculate_total_duration(), expected)
@@ -178,21 +181,23 @@ class TestOverwatch(unittest.TestCase):
             'Single CR p/d': 353.28, 
             'Max CR p/d': 17664, 
             'Single CR p/7d': 2472.96, 
-            'Max CR p/7d': 123648 
+            'Max CR p/7d': 123648,
+            'Completed crawls': 3 
         } 
         self.assertEqual(self.overwatch.gather_scrapy_metrics(), expected)  
 
     def test_write_to_csv(self):
         filename = 'test_ouput.csv'
-        settings.OUTPUT_FILE = os.path.join(self.temp_dir,
-                                            filename)
-        os.mknod(settings.OUTPUT_FILE)
+        self.overwatch.output_file = os.path.join(self.temp_dir,
+                                                  filename)
+        os.mknod(self.overwatch.output_file)
         self.overwatch.write_to_csv()
 
-        with open(settings.OUTPUT_FILE, 'rb') as csvfile:
+        with open(self.overwatch.output_file, 'rb') as csvfile:
             reader = csv.DictReader(csvfile)
             csv_data = [row for row in reader]
             self.assertEqual(csv_data[0]['Total Duration'], '343.416054')
+            self.assertEqual(csv_data[0]['Completed crawls'], '3')
 
 
 class TestCalculateTimeDifferences(unittest.TestCase):
