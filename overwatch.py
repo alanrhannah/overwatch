@@ -96,7 +96,8 @@ class Overwatch(object):
             'Single CR p/d': self.calculate_single_crawls_per_day(),
             'Max CR p/d': self.calculate_est_total_crawls_per_day(),
             'Single CR p/7d': self.calculate_single_crawls_per_week(),
-            'Max CR p/7d': self.calculate_est_total_crawls_per_week()
+            'Max CR p/7d': self.calculate_est_total_crawls_per_week(),
+            'Completed crawls': self.gather_completed_crawl_count()
         }
         return self.scrapy_metrics
 
@@ -155,6 +156,16 @@ class Overwatch(object):
             crawl_durations.append(duration.total_seconds())
         
         return crawl_durations
+
+    def gather_completed_crawl_count(self):
+        """
+        Gather the number of crawls that have been completed at run time.
+
+        :return completed_crawl_count:  integer
+        """
+        response_dictionary = self.response.json()
+        completed_crawl_count = len(response_dictionary['finished'])      
+        return completed_crawl_count
 
     def calculate_av_crawl_duration(self):
         """
